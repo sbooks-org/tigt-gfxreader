@@ -515,12 +515,11 @@ fn finish_pixels(
 ) -> Analysis {
     let region = report.region;
     report.missing_pixel_count = pixels.iter().filter(|p| p.is_none()).count();
-    let font: Vec<[u8; 8]> = rom
+    let font = rom
         .map(|rom| {
             rom[options.font_offset..options.font_offset + options.glyph_count * 8]
-                .chunks_exact(8)
-                .map(|chunk| chunk.try_into().unwrap())
-                .collect()
+                .as_chunks::<8>()
+                .0
         })
         .unwrap_or_default();
     let mut glyphs = Vec::new();
@@ -533,7 +532,7 @@ fn finish_pixels(
                         &pixels[(gy + y) * region.width + gx..(gy + y) * region.width + gx + 8],
                     );
                 }
-                let glyph = classify(region.x + gx, region.y + gy, &tile, &font);
+                let glyph = classify(region.x + gx, region.y + gy, &tile, font);
                 if !matches!(glyph.status, "matched" | "ambiguous") {
                     let message = match glyph.status {
                         "too_many_colors" => format!(
@@ -651,7 +650,7 @@ pub fn replay_text(capture: &[u8]) -> TextReport {
     let (cells, snapshot) = terminal.cells();
     let mut decoded_text = String::new();
     let mut terminal_cells = Vec::new();
-    for (row, line) in cells.chunks_exact(COLS).enumerate() {
+    for (row, line) in cells.as_chunks::<COLS>().0.iter().enumerate() {
         let mut text = String::new();
         for (column, cell) in line.iter().enumerate() {
             text.push_str(&cell.text());

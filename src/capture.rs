@@ -207,7 +207,7 @@ fn open_pty() -> io::Result<(OwnedFd, OwnedFd)> {
             &mut slave,
             std::ptr::null_mut(),
             std::ptr::null_mut::<libc::termios>(),
-            &mut size,
+            &raw mut size,
         )
     } == -1
     {

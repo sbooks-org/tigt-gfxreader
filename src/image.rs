@@ -60,7 +60,7 @@ pub fn decode_png(input: impl Read) -> Result<Image, String> {
     let samples = &samples[..frame.buffer_size()];
     match frame.color_type {
         png::ColorType::Rgb => {
-            for pixel in samples.chunks_exact(3) {
+            for pixel in samples.as_chunks::<3>().0 {
                 rgba.extend_from_slice(pixel);
                 rgba.push(255);
             }
@@ -72,7 +72,7 @@ pub fn decode_png(input: impl Read) -> Result<Image, String> {
             }
         }
         png::ColorType::GrayscaleAlpha => {
-            for pixel in samples.chunks_exact(2) {
+            for pixel in samples.as_chunks::<2>().0 {
                 rgba.extend_from_slice(&[pixel[0], pixel[0], pixel[0], pixel[1]]);
             }
         }
