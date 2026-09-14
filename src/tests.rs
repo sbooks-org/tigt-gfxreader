@@ -90,6 +90,22 @@ fn ansi_replay_repaints_moves_erases_and_preserves_alternate_before_exit() {
 }
 
 #[test]
+fn input_mode_save_restore_preserves_the_visible_transcript() {
+    let report = replay_text(
+        b"A\x1b[?2004s\x1b[?2004hB\
+          \x1b[?9;1000;1002;1003;1005;1006;1015;1016s\
+          \x1b[?1003;1006hC\
+          \x1b[?9;1000;1002;1003;1005;1006;1015;1016l\
+          \x1b[?9;1000;1002;1003;1005;1006;1015;1016r\
+          \x1b[?2004l\x1b[?2004rD",
+    );
+    assert!(report.success, "{:?}", report.diagnostics);
+    assert_eq!(report.decoded_text, "ABCD\n");
+    // Display-affecting modes still require real saved-state implementation.
+    assert!(!replay_text(b"A\x1b[?25sB\x1b[?25r").success);
+}
+
+#[test]
 fn explicit_erasure_defines_pixels_but_initial_blanks_remain_unknown() {
     let options = options(320, region(8, 8));
     let absent = analyze(b"\x1b[?1049h", &font(), &options).unwrap();

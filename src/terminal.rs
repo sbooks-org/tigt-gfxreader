@@ -450,10 +450,16 @@ impl Perform for Terminal {
                 .unwrap_or(default)
         };
         let first = p.first().map(|p| p[0]).unwrap_or(0);
-        if intermediates == b"?" && matches!(action, 'h' | 'l') {
+        if intermediates == b"?" && matches!(action, 'h' | 'l' | 's' | 'r') {
             for parameter in &p {
                 let set = action == 'h';
                 match parameter[0] {
+                    // Input encodings and synchronized-output boundaries do not
+                    // change the captured screen, including DEC save/restore.
+                    1 | 9 | 1000..=1007 | 1015 | 1016 | 2004 | 2026 => {}
+                    n if matches!(action, 's' | 'r') => self
+                        .errors
+                        .push(format!("unsupported saved private terminal mode {n}")),
                     47 | 1047 | 1049 => {
                         if set && self.primary.is_none() {
                             self.primary = Some(std::mem::replace(&mut self.screen, Screen::new()));
@@ -480,7 +486,6 @@ impl Perform for Terminal {
                     }
                     12 => self.cursor_blinking = set,
                     25 => self.cursor_visible = set,
-                    1 | 1000..=1007 | 1015 | 2004 | 2026 => {}
                     n => self
                         .errors
                         .push(format!("unsupported private terminal mode {n}")),

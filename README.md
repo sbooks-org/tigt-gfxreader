@@ -44,6 +44,7 @@ cat session.pty | tigt-gfxreader replay --capture - --output out/piped
 
 - Bitmap inputs are exact grids: **160×200, 320×200, or 640×200**, default 320×200. There is no image resizing, antialias removal, or automatic glyph-grid discovery.
 - Transcript replay uses a fixed **320×80 terminal**, not the current host terminal. Its default/indexed RGB palette approximates a host palette; explicit truecolor values are preserved.
+- Input-mode controls, including DEC save/restore for bracketed paste and mouse reporting, leave the visible transcript unchanged. Unsupported display-affecting saved modes remain errors rather than guessed screen state.
 - The last alternate-screen snapshot survives a normal application exit. Missing or invalid bitmap pixels are transparent, not silently filled in.
 - Bitmap OCR is optional for `analyze` and bitmap `capture`; `image` requires a caller-supplied font. Unknown or ambiguous glyphs are `?`, unless an exact `--expect` candidate resolves an ambiguity. Text replay is a separate operation, not OCR.
 - No font or ROM is bundled. You are responsible for permission to use and distribute any font bytes you supply.
